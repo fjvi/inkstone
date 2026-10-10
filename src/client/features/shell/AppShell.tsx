@@ -174,10 +174,9 @@ export function MobileShell() {
     ];
 
     return (
-        // 关键点：取消固定视口高度限制，改用 min-h-[100dvh] 配合底部留白，允许全局文档滚动
         <div className="relative flex min-h-[100dvh] w-full flex-col bg-[var(--bg-base)] pt-[env(safe-area-inset-top)] pb-[calc(64px+env(safe-area-inset-bottom))]">
-            {/* 内容区域：按当前 pane 条件渲染，在标准文档流中撑开高度并触发页面级滚动 */}
-            <div className="w-full flex-1">
+            {/* 核心改动：为内容容器加上 h-auto 和 flex-1，解除内部子组件被强行锁死的溢出限制，允许页面顺畅全局滚动 */}
+            <div className="flex w-full flex-1 flex-col [&_*]:!h-auto">
                 {pane === 'account' && <MobileAccount />}
                 {pane === 'list' && <NoteList />}
                 {notePane && activeNoteId && (
@@ -187,7 +186,7 @@ export function MobileShell() {
                 )}
             </div>
 
-            {/* 底部导航栏：fixed 吸底，不占用文档流高度，不阻碍页面滚动 */}
+            {/* 底部导航栏保持不变 */}
             <nav aria-label={t("shell.mobile_navigation")} className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 flex h-[calc(64px+env(safe-area-inset-bottom))] items-stretch justify-around border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)] shadow-lg">
                 {tabs.map((tab) => (
                     <button key={tab.id} type="button" disabled={!activeNoteId && (tab.id === 'editor' || tab.id === 'preview')} aria-current={pane === tab.id ? 'page' : undefined} onClick={() => handleTabChange(tab.id)} className={cn('flex min-w-0 flex-1 items-center justify-center text-[12px] transition-colors disabled:opacity-40', pane === tab.id ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
