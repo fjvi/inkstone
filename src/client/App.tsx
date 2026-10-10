@@ -51,20 +51,19 @@ export function App() {
     return () => window.clearTimeout(timer)
   }, [shareSlug])
 
-if (shareSlug) {
+  if (shareSlug) {
     return (
-      <div className="min-h-[100dvh] w-full bg-[var(--bg-base)]">
+      <>
         <ErrorBoundary>
           <Suspense fallback={<PageFallback />}>
             <SharePage slug={shareSlug} />
           </Suspense>
         </ErrorBoundary>
         <Toaster />
-      </div>
+      </>
     )
   }
 
-        
   return (
     <>
       <ErrorBoundary>
