@@ -386,7 +386,7 @@ export const Preview = memo(function Preview({
   return (
     <div
       ref={scrollerRef}
-      className={cn('h-full overflow-y-auto overscroll-contain px-4 py-3', className)}
+      className={cn('min-h-full h-auto px-4 py-3', className)}
       data-preview-scroller
       onScroll={(event) => onScroll?.(event.currentTarget)}
     >
