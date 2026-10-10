@@ -286,5 +286,16 @@ function addShareAccess(html: string, slug: string): string {
         catch {
         }
     }
-    return template.innerHTML;
+    return (<div 
+      className="min-h-[100dvh] bg-[var(--bg-base)]"
+      style={{ position: 'absolute', inset: '0', height: 'auto', minHeight: '100dvh', overflow: 'visible' }}
+    >
+      <header className="sticky top-0 z-10 border-b border-[var(--border-subtle)] bg-[var(--bg-base)]/85 pt-[env(safe-area-inset-top)] backdrop-blur">
+        {/* ... 头部代码保持不变 ... */}
+      </header>
+
+      <main className="mx-auto max-w-[860px] px-4 pb-[calc(64px+env(safe-area-inset-bottom))] md:px-5 md:pb-24">
+        {/* ... 中间内容代码保持不变 ... */}
+      </main>
+    </div>);
 }
