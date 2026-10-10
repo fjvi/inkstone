@@ -53,7 +53,6 @@ export function App() {
 
 if (shareSlug) {
     return (
-      {/* 关键修改：用 min-h-[100dvh] 包裹，允许全局文档流向下滑动 */}
       <div className="min-h-[100dvh] w-full bg-[var(--bg-base)]">
         <ErrorBoundary>
           <Suspense fallback={<PageFallback />}>
@@ -65,6 +64,7 @@ if (shareSlug) {
     )
   }
 
+        
   return (
     <>
       <ErrorBoundary>
