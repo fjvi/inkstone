@@ -136,7 +136,7 @@ export function MobileShell() {
     const activeNoteId = useUi((s) => s.activeNoteId);
     const notePane = pane === 'editor' || pane === 'preview';
 
-    // 1. 监听浏览器返回 (popstate)，实现回退切回列表而不是退出网站
+    // 1. 监听浏览器返回 (popstate)，防止回退直接退出网站
     useEffect(() => {
         const handlePopState = () => {
             const currentPane = useUi.getState().mobilePane;
@@ -174,19 +174,25 @@ export function MobileShell() {
     ];
 
     return (
-        <div className="relative flex min-h-[100dvh] w-full flex-col bg-[var(--bg-base)] pt-[env(safe-area-inset-top)] pb-[calc(64px+env(safe-area-inset-bottom))]">
-            {/* 核心改动：为内容容器加上 h-auto 和 flex-1，解除内部子组件被强行锁死的溢出限制，允许页面顺畅全局滚动 */}
-            <div className="flex w-full flex-1 flex-col [&_*]:!h-auto">
-                {pane === 'account' && <MobileAccount />}
-                {pane === 'list' && <NoteList />}
-                {notePane && activeNoteId && (
-                    <Suspense fallback={<WorkspaceFallback />}>
-                        <Workspace onMobileBack={() => { window.history.back(); setPane('list'); }} />
-                    </Suspense>
-                )}
+        <div className="relative flex h-[100dvh] w-full flex-col overflow-hidden bg-[var(--bg-base)] pt-[env(safe-area-inset-top)] pb-[calc(64px+env(safe-area-inset-bottom))]">
+            {/* 内容区域：恢复 flex-1 和内部滚动，确保 CodeMirror 编辑器和列表可以正常滚动 */}
+            <div className="relative min-h-0 flex-1">
+                <div aria-hidden={pane !== 'account'} inert={pane !== 'account'} data-active={pane === 'account' || undefined} className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    {pane === 'account' && <MobileAccount />}
+                </div>
+                <div aria-hidden={pane !== 'list'} inert={pane !== 'list'} data-active={pane === 'list' || undefined} className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    <NoteList />
+                </div>
+                <div aria-hidden={!notePane} inert={!notePane} data-active={notePane || undefined} data-from="right" className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    {notePane && activeNoteId && (
+                        <Suspense fallback={<WorkspaceFallback />}>
+                            <Workspace onMobileBack={() => { window.history.back(); setPane('list'); }} />
+                        </Suspense>
+                    )}
+                </div>
             </div>
 
-            {/* 底部导航栏保持不变 */}
+            {/* 底部导航栏 */}
             <nav aria-label={t("shell.mobile_navigation")} className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 flex h-[calc(64px+env(safe-area-inset-bottom))] items-stretch justify-around border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)] shadow-lg">
                 {tabs.map((tab) => (
                     <button key={tab.id} type="button" disabled={!activeNoteId && (tab.id === 'editor' || tab.id === 'preview')} aria-current={pane === tab.id ? 'page' : undefined} onClick={() => handleTabChange(tab.id)} className={cn('flex min-w-0 flex-1 items-center justify-center text-[12px] transition-colors disabled:opacity-40', pane === tab.id ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
@@ -199,7 +205,6 @@ export function MobileShell() {
         </div>
     );
 }
-
 function WorkspaceFallback() {
     return (
         <div
