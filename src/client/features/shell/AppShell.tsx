@@ -130,11 +130,13 @@ export function AppShell() {
     </div>);
 }
 
-function MobileShell() {
+//inkstone/src/client/features/shell/AppShell.tsx 解决前进回退的问题
+export function MobileShell() {
     const pane = useUi((s) => s.mobilePane);
     const setPane = useUi((s) => s.setMobilePane);
     const activeNoteId = useUi((s) => s.activeNoteId);
     const notePane = pane === 'editor' || pane === 'preview';
+
     // 1. 监听浏览器返回 (popstate)，实现“回退切回列表而不是退出网站”
     useEffect(() => {
         const handlePopState = () => {
@@ -171,29 +173,36 @@ function MobileShell() {
         { id: 'preview' as const, icon: <Eye size={19}/>, label: t('mobile.view') },
         { id: 'account' as const, icon: <UserRound size={19}/>, label: t('mobile.account') },
     ];
-	
-    return (<div className="relative flex h-full min-h-0 w-full flex-col overflow-hidden bg-[var(--bg-base)] pt-[env(safe-area-inset-top)]">
-      <div className="relative min-h-0 flex-1">
-        <div aria-hidden={pane !== 'account'} inert={pane !== 'account'} data-active={pane === 'account' || undefined} className="mobile-pane-layer absolute inset-0">
-          {pane === 'account' && <MobileAccount />}
-        </div>
-        <div aria-hidden={pane !== 'list'} inert={pane !== 'list'} data-active={pane === 'list' || undefined} className="mobile-pane-layer absolute inset-0">
-          <NoteList />
-        </div>
-        <div aria-hidden={!notePane} inert={!notePane} data-active={notePane || undefined} data-from="right" className="mobile-pane-layer absolute inset-0">
-          {notePane && activeNoteId && (<Suspense fallback={<WorkspaceFallback />}><Workspace onMobileBack={() => setPane('list')}/></Suspense>) }
-        </div>
-      </div>
 
-      <nav aria-label={t("shell.mobile_navigation")} className="mobile-bottom-nav flex h-[calc(64px+env(safe-area-inset-bottom))] shrink-0 items-stretch justify-around border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)]">
-        {tabs.map((tab) => (<button key={tab.id} type="button" disabled={!activeNoteId && (tab.id === 'editor' || tab.id === 'preview')} aria-current={pane === tab.id ? 'page' : undefined} onClick={() => setPane(tab.id)} className={cn('flex min-w-0 flex-1 items-center justify-center text-[12px] transition-colors disabled:opacity-40', pane === tab.id ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
-            <span className="mobile-tab-content">{tab.icon}<span>{tab.label}</span></span>
-          </button>))}
-      </nav>
+    return (
+        // 恢复视口高度限制（减去底部导航栏的高度），确保 absolute 元素有正确的定位高度基准，消除空白
+        <div className="relative flex h-[calc(100dvh-64px-env(safe-area-inset-bottom))] w-full flex-col bg-[var(--bg-base)] pt-[env(safe-area-inset-top)]">
+            <div className="relative min-h-0 flex-1">
+                <div aria-hidden={pane !== 'account'} inert={pane !== 'account'} data-active={pane === 'account' || undefined} className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    {pane === 'account' && <MobileAccount />}
+                </div>
+                <div aria-hidden={pane !== 'list'} inert={pane !== 'list'} data-active={pane === 'list' || undefined} className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    <NoteList />
+                </div>
+                <div aria-hidden={!notePane} inert={!notePane} data-active={notePane || undefined} data-from="right" className="mobile-pane-layer absolute inset-0 overflow-y-auto">
+                    {notePane && activeNoteId && (<Suspense fallback={<WorkspaceFallback />}><Workspace onMobileBack={() => { window.history.back(); setPane('list'); }}/></Suspense>) }
+                </div>
+            </div>
 
-      <OverlayHost />
-    </div>);
+            {/* 底部导航栏吸底 */}
+            <nav aria-label={t("shell.mobile_navigation")} className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 flex h-[calc(64px+env(safe-area-inset-bottom))] items-stretch justify-around border-t border-[var(--border-subtle)] bg-[var(--bg-surface)] pb-[env(safe-area-inset-bottom)]">
+                {tabs.map((tab) => (
+                    <button key={tab.id} type="button" disabled={!activeNoteId && (tab.id === 'editor' || tab.id === 'preview')} aria-current={pane === tab.id ? 'page' : undefined} onClick={() => handleTabChange(tab.id)} className={cn('flex min-w-0 flex-1 items-center justify-center text-[12px] transition-colors disabled:opacity-40', pane === tab.id ? 'text-[var(--accent)]' : 'text-[var(--text-tertiary)]')}>
+                        <span className="mobile-tab-content">{tab.icon}<span>{tab.label}</span></span>
+                    </button>
+                ))}
+            </nav>
+
+            <OverlayHost />
+        </div>
+    );
 }
+
 function WorkspaceFallback() {
     return (
         <div
