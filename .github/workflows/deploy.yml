@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 'latest'
+          node-version: '22'   # 建议固定使用稳定性较好的 22 或 24
           cache: 'npm'
 
       - name: Install Dependencies
@@ -25,10 +25,9 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      # 使用 wrangler-action 执行自定义的 kv 部署命令
-      - name: Publish to Cloudflare Workers (KV)
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: run deploy:kv
+      # 直接通过标准的 npm 脚本执行 KV 部署，并注入 Cloudflare 环境变量
+      - name: Deploy via npm script (KV)
+        run: npm run deploy:kv
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
