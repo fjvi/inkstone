@@ -3,7 +3,7 @@ name: Deploy Inkstone to Cloudflare Workers
 on:
   push:
     branches:
-      - main     # 如果你的主分支是 master，请修改为 master
+      - main     # 如果你的默认分支是 master，请修改为 master
 
 jobs:
   deploy:
@@ -22,14 +22,13 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      # 如果项目需要打包编译步骤（例如前端构建），请在此处解除注释并填入正确的构建命令
-      # - name: Build Project
-      #   run: npm run build
+      # 关键补充：Inkstone 需要执行打包编译命令以生成前端静态页面产物
+      - name: Build Project
+        run: npm run build
 
       - name: Publish to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # 如果你的 wrangler.toml 中配置了项目名称，Wrangler 会自动识别部署到同名 Worker
           command: deploy
