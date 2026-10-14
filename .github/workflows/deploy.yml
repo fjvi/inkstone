@@ -1,0 +1,35 @@
+name: Deploy Inkstone to Cloudflare Workers
+
+on:
+  push:
+    branches:
+      - main     # 如果你的主分支是 master，请修改为 master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm install
+
+      # 如果项目需要打包编译步骤（例如前端构建），请在此处解除注释并填入正确的构建命令
+      # - name: Build Project
+      #   run: npm run build
+
+      - name: Publish to Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # 如果你的 wrangler.toml 中配置了项目名称，Wrangler 会自动识别部署到同名 Worker
+          command: deploy
