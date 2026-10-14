@@ -16,13 +16,12 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22   # 升级到 Node.js 22 或 24（根据 package.json 要求）
           cache: 'npm'
 
       - name: Install Dependencies
         run: npm install
 
-      # 关键补充：Inkstone 需要执行打包编译命令以生成前端静态页面产物
       - name: Build Project
         run: npm run build
 
