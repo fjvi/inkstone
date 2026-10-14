@@ -1,4 +1,4 @@
-name: Deploy Inkstone to Cloudflare Workers
+name: Deploy Inkstone to Cloudflare Workers (KV Mode)
 
 on:
   push:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22   # 升级到 Node.js 22 或 24（根据 package.json 要求）
+          node-version: 'latest'
           cache: 'npm'
 
       - name: Install Dependencies
@@ -25,7 +25,8 @@ jobs:
       - name: Build Project
         run: npm run build
 
-      - name: Publish to Cloudflare Workers
+      # 使用 wrangler-action 执行自定义的 kv 部署命令
+      - name: Publish to Cloudflare Workers (KV)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
